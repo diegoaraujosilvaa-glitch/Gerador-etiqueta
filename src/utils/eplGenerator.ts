@@ -4,6 +4,7 @@
  */
 
 import { MaterialRecord, LabelSize, PrinterConfig } from "../types";
+import { calculateEan13CheckDigit } from "./barcode";
 
 // Helper to remove accents and special characters for standard EPL printers
 export function sanitizeEplText(text: string): string {
@@ -43,7 +44,21 @@ export function generateEPL(
   const cod = sanitizeEplText(record.codigoMaterial);
   const desc = sanitizeEplText(record.descricao);
   const lote = sanitizeEplText(record.lote);
-  const ean = sanitizeEplText(record.ean);
+  
+  const eanRaw = record.ean || "";
+  const cleanedEan = eanRaw.replace(/[^\d]/g, "");
+  const isEanEligible = cleanedEan.length === 12 || cleanedEan.length === 13;
+  let finalEanForBarcode = eanRaw;
+  let eanBarcodeType = "1"; // Code 128 (default)
+
+  if (isEanEligible) {
+    const first12 = cleanedEan.substring(0, 12);
+    const checkDigit = calculateEan13CheckDigit(first12);
+    finalEanForBarcode = first12 + checkDigit.toString();
+    eanBarcodeType = "E30"; // EAN-13 for EPL
+  } else {
+    finalEanForBarcode = sanitizeEplText(finalEanForBarcode);
+  }
 
   let epl = "";
 
@@ -94,8 +109,8 @@ export function generateEPL(
 
     // Side-by-Side Barcodes to fully leverage Horizontal scope
     // Left side: EAN Code
-    epl += `A20,265,0,2,1,1,N,"EAN: ${ean}"\n`;
-    epl += `B20,290,0,1,2,5,80,B,"${ean}"\n`;
+    epl += `A20,265,0,2,1,1,N,"EAN: ${finalEanForBarcode}"\n`;
+    epl += `B20,290,0,${eanBarcodeType},2,5,80,B,"${finalEanForBarcode}"\n`;
 
     // Right side: LOTE Code
     epl += `A420,265,0,2,1,1,N,"LOTE: ${lote}"\n`;
@@ -136,8 +151,8 @@ export function generateEPL(
 
     // Side-by-Side Barcodes for 80x50 label
     // Left side: EAN Code
-    epl += `A20,160,0,1,1,1,N,"EAN: ${ean}"\n`;
-    epl += `B20,180,0,1,2,4,65,B,"${ean}"\n`;
+    epl += `A20,160,0,1,1,1,N,"EAN: ${finalEanForBarcode}"\n`;
+    epl += `B20,180,0,${eanBarcodeType},2,4,65,B,"${finalEanForBarcode}"\n`;
 
     // Right side: LOTE Code
     epl += `A330,160,0,1,1,1,N,"LOTE: ${lote}"\n`;

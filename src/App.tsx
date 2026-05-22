@@ -27,6 +27,7 @@ import {
 import { MaterialRecord, LabelSize, PrinterConfig } from "./types";
 import { generateEPL, sanitizeEplText, wrapText } from "./utils/eplGenerator";
 import BarcodeSvg from "./components/BarcodeSvg";
+import { generateBarcodeSvgMarkup } from "./utils/barcode";
 
 // Pre-loaded initial sample data
 const MOCK_MATERIALS: MaterialRecord[] = [
@@ -362,6 +363,9 @@ export default function App() {
     const lote = sanitizeEplText(selectedRecord.lote);
     const ean = sanitizeEplText(selectedRecord.ean);
 
+    const eanSvgMarkup = generateBarcodeSvgMarkup(selectedRecord.ean, undefined, 200, 50);
+    const loteSvgMarkup = generateBarcodeSvgMarkup(selectedRecord.lote, '128', 200, 50);
+
     // Dynamic measurements based on sizes
     const pixelWidth = labelSize === "100x75" ? "504px" : "415px"; // equivalent to ~5.00 in vs 4.09 in
     const pixelHeight = labelSize === "100x75" ? "378px" : "264px"; // equivalent to ~3.72 in vs 2.60 in
@@ -450,7 +454,7 @@ export default function App() {
               margin: 6px 0;
             }
             .barcode-svg-element {
-              height: ${labelSize === "75x100" ? "50px" : "40px"};
+              height: ${labelSize === "100x75" ? "50px" : "40px"};
               max-width: 100%;
               background: black;
             }
@@ -491,21 +495,18 @@ export default function App() {
             <div class="border-line-thin"></div>
 
             <div style="display: flex; gap: 15px; width: 100%;">
-              <div class="barcode-box" style="flex: 1;">
-                <div class="bold-label" style="font-size: 9px; align-self: flex-start; margin-bottom: 2px;">EAN: ${ean}</div>
-                <!-- Simulated print layout barcode, rendered using reliable code fallback pattern -->
-                <div style="font-size: 26px; font-weight: normal; font-family: 'Courier New'; tracking: -1px; text-align: center;">
-                  ||||| | ||| || ||| | ||
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center;">
+                <div class="bold-label" style="font-size: 9px; align-self: flex-start; margin-bottom: 4px;">EAN:</div>
+                <div style="width: 100%; display: flex; justify-content: center;">
+                  ${eanSvgMarkup}
                 </div>
-                <div class="barcode-text">${ean}</div>
               </div>
 
-              <div class="barcode-box" style="flex: 1;">
-                <div class="bold-label" style="font-size: 9px; align-self: flex-start; margin-bottom: 2px;">LOTE: ${lote}</div>
-                <div style="font-size: 26px; font-weight: normal; font-family: 'Courier New'; tracking: -1px; text-align: center;">
-                  ||| ||| | ||| || ||| ||
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center;">
+                <div class="bold-label" style="font-size: 9px; align-self: flex-start; margin-bottom: 4px;">LOTE:</div>
+                <div style="width: 100%; display: flex; justify-content: center;">
+                  ${loteSvgMarkup}
                 </div>
-                <div class="barcode-text">${lote}</div>
               </div>
             </div>
 
