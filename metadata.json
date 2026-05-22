@@ -1,0 +1,6 @@
+{
+  "name": "Gerador de Etiquetas EPL Zebra",
+  "description": "Sistema para importação de planilhas, busca de materiais e geração de etiquetas EPL (75x100 e 50x80) para impressoras Zebra GT800 com pré-visualização e código de barras.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
