@@ -135,9 +135,15 @@ export function getBarcodeBars(pattern: string, totalWidth: number): BarInfo[] {
     totalModules += parseInt(pattern[i], 10);
   }
 
-  const moduleWidth = totalWidth / totalModules;
+  // Calculate crisp integer module widths centered inside the total width with solid quiet zones
+  const minMargin = 10;
+  const maxBarcodeWidth = totalWidth - 2 * minMargin;
+  const moduleWidth = Math.max(1, Math.floor(maxBarcodeWidth / totalModules));
+  const barcodeWidth = totalModules * moduleWidth;
+  const marginL = Math.floor((totalWidth - barcodeWidth) / 2);
+
   const bars: BarInfo[] = [];
-  let currentX = 0;
+  let currentModule = 0;
 
   for (let i = 0; i < pattern.length; i++) {
     const widthModules = parseInt(pattern[i], 10);
@@ -145,25 +151,32 @@ export function getBarcodeBars(pattern: string, totalWidth: number): BarInfo[] {
     const isBar = i % 2 === 0;
 
     bars.push({
-      x: currentX,
+      x: marginL + currentModule * moduleWidth,
       width: pixelWidth,
       isBar
     });
-    currentX += pixelWidth;
+    currentModule += widthModules;
   }
 
   return bars;
 }
 
-// Custom parser to map binary 1/0 string (from EAN-13) into bars
+// Custom parser to map binary 1/0 string (from EAN-13) into bars with crisp borders and integer widths
 export function getEan13Bars(binary: string, totalWidth: number): BarInfo[] {
-  const moduleWidth = totalWidth / 95; // EAN-13 always has exactly 95 modules
+  const totalModules = 95; // EAN-13 always has exactly 95 modules
+  // Calculate crisp integer module width centering the code
+  const minMargin = 10;
+  const maxBarcodeWidth = totalWidth - 2 * minMargin;
+  const moduleWidth = Math.max(1, Math.floor(maxBarcodeWidth / totalModules));
+  const barcodeWidth = totalModules * moduleWidth;
+  const marginL = Math.floor((totalWidth - barcodeWidth) / 2);
+
   const bars: BarInfo[] = [];
 
   for (let i = 0; i < binary.length; i++) {
     const isBar = binary[i] === "1";
     bars.push({
-      x: i * moduleWidth,
+      x: marginL + i * moduleWidth,
       width: moduleWidth,
       isBar
     });

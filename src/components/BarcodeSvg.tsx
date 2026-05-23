@@ -52,7 +52,7 @@ export default function BarcodeSvg({ value, width = 300, height = 70, format }: 
                   key={idx}
                   x={bar.x}
                   y={0}
-                  width={Math.max(0.2, bar.width)}
+                  width={bar.width}
                   height={height}
                   fill="black"
                 />
@@ -95,7 +95,7 @@ export default function BarcodeSvg({ value, width = 300, height = 70, format }: 
               key={idx}
               x={bar.x}
               y={0}
-              width={Math.max(0.5, bar.width)}
+              width={bar.width}
               height={height}
               fill="black"
             />

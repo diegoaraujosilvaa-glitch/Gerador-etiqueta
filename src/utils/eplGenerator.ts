@@ -60,6 +60,13 @@ export function generateEPL(
     finalEanForBarcode = sanitizeEplText(finalEanForBarcode);
   }
 
+  let eplBarcodeData = finalEanForBarcode;
+  if (isEanEligible && eanBarcodeType === "E30") {
+    // Para impressoras EPL2 Zebra, a simbologia E30 (EAN-13) espera exatamente 12 dígitos.
+    // O 13º dígito (verificador) é calculado e adicionado automaticamente pela própria impressora.
+    eplBarcodeData = finalEanForBarcode.substring(0, 12);
+  }
+
   let epl = "";
 
   // 1. Clear Image Buffer
@@ -110,7 +117,7 @@ export function generateEPL(
     // Side-by-Side Barcodes to fully leverage Horizontal scope
     // Left side: EAN Code
     epl += `A20,265,0,2,1,1,N,"EAN: ${finalEanForBarcode}"\n`;
-    epl += `B20,290,0,${eanBarcodeType},2,5,80,B,"${finalEanForBarcode}"\n`;
+    epl += `B20,290,0,${eanBarcodeType},2,5,80,B,"${eplBarcodeData}"\n`;
 
     // Right side: LOTE Code
     epl += `A420,265,0,2,1,1,N,"LOTE: ${lote}"\n`;
@@ -152,7 +159,7 @@ export function generateEPL(
     // Side-by-Side Barcodes for 80x50 label
     // Left side: EAN Code
     epl += `A20,160,0,1,1,1,N,"EAN: ${finalEanForBarcode}"\n`;
-    epl += `B20,180,0,${eanBarcodeType},2,4,65,B,"${finalEanForBarcode}"\n`;
+    epl += `B20,180,0,${eanBarcodeType},2,4,65,B,"${eplBarcodeData}"\n`;
 
     // Right side: LOTE Code
     epl += `A330,160,0,1,1,1,N,"LOTE: ${lote}"\n`;
