@@ -363,8 +363,10 @@ export default function App() {
     const lote = sanitizeEplText(selectedRecord.lote);
     const ean = sanitizeEplText(selectedRecord.ean);
 
-    const eanSvgMarkup = generateBarcodeSvgMarkup(selectedRecord.ean, undefined, 200, 50);
-    const loteSvgMarkup = generateBarcodeSvgMarkup(selectedRecord.lote, '128', 200, 50);
+    const svgWidth = labelSize === "100x75" ? 440 : 360;
+    const svgHeight = labelSize === "100x75" ? 95 : 70;
+    const eanSvgMarkup = generateBarcodeSvgMarkup(selectedRecord.ean, undefined, svgWidth, svgHeight);
+    const loteSvgMarkup = generateBarcodeSvgMarkup(selectedRecord.lote, '128', svgWidth, svgHeight);
 
     // Dynamic measurements based on sizes
     const pixelWidth = labelSize === "100x75" ? "504px" : "415px"; // equivalent to ~5.00 in vs 4.09 in
@@ -401,10 +403,10 @@ export default function App() {
               height: ${pixelHeight};
               border: 1px solid #ccc;
               box-sizing: border-box;
-              padding: 12px;
+              padding: ${labelSize === "100x75" ? "16px 20px" : "12px 14px"};
               display: flex;
               flex-direction: column;
-              justify-content: space-between;
+              justify-content: flex-start;
               background-color: white;
               position: relative;
             }
@@ -413,108 +415,74 @@ export default function App() {
                 border: none;
                 width: 100%;
                 height: 100%;
-                padding: 10px;
+                padding: ${labelSize === "100x75" ? "12px 16px" : "8px 10px"};
               }
             }
-            .border-line {
-              border-top: 3px solid black;
-              width: 100%;
-              margin: 5px 0;
-            }
-            .border-line-thin {
-              border-top: 1px solid black;
-              width: 100%;
-              margin: 6px 0;
-            }
-            .title {
-              font-size: ${labelSize === "100x75" ? "14px" : "12px"};
-              font-weight: bold;
-              text-align: center;
-              letter-spacing: 1px;
-              margin-bottom: 2px;
-            }
             .grid-row {
-              margin: 4px 0;
-              font-size: ${labelSize === "100x75" ? "12px" : "10px"};
+              margin: 0;
+              font-size: ${labelSize === "100x75" ? "14px" : "11px"};
             }
             .bold-label {
               font-weight: bold;
             }
             .desc-area {
-              margin: 8px 0;
+              margin-top: 3px;
               font-size: ${labelSize === "100x75" ? "12px" : "10px"};
+              line-height: 1.2;
             }
             .desc-line {
               font-weight: bold;
             }
-            .barcode-box {
+            .barcode-stack {
               display: flex;
               flex-direction: column;
-              align-items: center;
-              margin: 6px 0;
+              gap: ${labelSize === "100x75" ? "14px" : "10px"};
+              margin-top: ${labelSize === "100x75" ? "14px" : "10px"};
+              width: 100%;
             }
-            .barcode-svg-element {
-              height: ${labelSize === "100x75" ? "50px" : "40px"};
-              max-width: 100%;
-              background: black;
-            }
-            .barcode-text {
-              font-size: 9px;
-              font-weight: bold;
-              letter-spacing: 3px;
-              margin-top: 3px;
-              text-align: center;
-            }
-            .footer-info {
+            .barcode-item {
               display: flex;
-              justify-content: space-between;
-              font-size: 9px;
-              font-weight: bold;
-              margin-top: auto;
+              flex-direction: column;
+              width: 100%;
+            }
+            .barcode-title {
+              font-size: ${labelSize === "100x75" ? "11px" : "9.5px"};
+              font-weight: 900;
+              margin-bottom: 2px;
+              text-transform: uppercase;
             }
           </style>
         </head>
         <body>
           <div class="label-container" id="imprimir-etiqueta">
+            <!-- Product Code and Description ONLY -->
             <div>
-              <div class="title">${labelSize === "100x75" ? "IDENTIFICACAO DE MATERIAL (HORIZONTAL)" : "IDENTIFICACAO SKU (HORIZONTAL)"}</div>
-              <div class="border-line"></div>
-              
               <div class="grid-row">
                 <span class="bold-label">${labelSize === "100x75" ? "COD. MATERIAL:" : "COD:"}</span> 
-                <span style="font-weight: bold; font-size: 14px;">${cod}</span>
+                <span style="font-weight: 900; font-size: ${labelSize === "100x75" ? "18px" : "15px"};">${cod}</span>
               </div>
               
               <div class="desc-area">
-                <span class="bold-label">${labelSize === "100x75" ? "DESCRICAO:" : "DESC:"}</span>
                 <div class="desc-line">${descLine1}</div>
                 ${descLine2 ? `<div class="desc-line">${descLine2}</div>` : ""}
               </div>
             </div>
 
-            <div class="border-line-thin"></div>
-
-            <div style="display: flex; gap: 15px; width: 100%;">
-              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center;">
-                <div class="bold-label" style="font-size: 9px; align-self: flex-start; margin-bottom: 4px;">EAN:</div>
-                <div style="width: 100%; display: flex; justify-content: center;">
+            <!-- Vertically Stacked Giant Barcodes -->
+            <div class="barcode-stack">
+              <div class="barcode-item">
+                <span class="barcode-title">EAN:</span>
+                <div style="width: 100%;">
                   ${eanSvgMarkup}
                 </div>
               </div>
 
-              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center;">
-                <div class="bold-label" style="font-size: 9px; align-self: flex-start; margin-bottom: 4px;">LOTE:</div>
-                <div style="width: 100%; display: flex; justify-content: center;">
+              <div class="barcode-item">
+                <span class="barcode-title">LOTE:</span>
+                <div style="width: 100%;">
                   ${loteSvgMarkup}
                 </div>
               </div>
-            </div>
-
-            <div class="border-line" style="border-top-width: 1px; margin-top: auto;"></div>
-            <div class="footer-info">
-              <span>ZEBRA GT800 (EPL)</span>
-              <span>DATA: ${dateStr}</span>
-              <span>${labelSize}</span>
             </div>
           </div>
           <script>
@@ -919,53 +887,49 @@ export default function App() {
                     
                     {/* The virtual physical label representation! styled like standard shipping/inventory ribbons */}
                     <div 
-                      className={`bg-white text-black p-5 rounded font-mono border-2 border-black/10 shadow-2xl relative select-all flex flex-col justify-between shrink-0 mb-4`}
+                      className="bg-white text-black p-5 rounded font-mono border-2 border-black/10 shadow-2xl relative select-all flex flex-col justify-start shrink-0 mb-4"
                       style={{ 
                         width: labelSize === "100x75" ? "420px" : "360px", 
-                        minHeight: labelSize === "100x75" ? "315px" : "240px"
+                        minHeight: labelSize === "100x75" ? "340px" : "280px"
                       }}
                     >
-                      {/* Grid header labels */}
-                      <div>
-                        <div className="text-center font-black tracking-wider text-[11px] uppercase text-black/95">
-                          {labelSize === "100x75" ? "IDENTIFICAÇÃO DE MATERIAL (HORIZONTAL)" : "IDENTIFICAÇÃO SKU (HORIZONTAL)"}
-                        </div>
-                        <div className="border-t-2 border-black my-1" />
-                        
-                        <div className="text-[10px] leading-tight mb-1 text-black/85">
-                          <span className="font-bold">COD: </span>
-                          <span className="text-sm font-black tracking-wide">{selectedRecord.codigoMaterial}</span>
+                      {/* Product Code & Description */}
+                      <div className="mb-3">
+                        <div className="text-[11px] leading-tight text-black/85">
+                          <span className="font-bold">{labelSize === "100x75" ? "COD. MATERIAL:" : "COD:"} </span>
+                          <span className="text-[15px] font-black tracking-wide">{selectedRecord.codigoMaterial}</span>
                         </div>
 
-                        <div className="text-[10px] leading-snug text-black/85">
-                          <span className="font-bold">DESCRIÇÃO: </span>
-                          <p className="font-extrabold uppercase line-clamp-2 mt-0.5" style={{ fontSize: labelSize === "100x75" ? "11px" : "9.5px" }}>
-                            {selectedRecord.descricao}
-                          </p>
+                        <div className="text-[10px] sm:text-[11px] font-extrabold uppercase line-clamp-2 mt-1 leading-snug">
+                          {selectedRecord.descricao}
                         </div>
                       </div>
 
-                      <div className="border-t border-black border-dashed my-2" />
-
-                      {/* Side-by-side Barcoding view layout */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <div className="text-[9px] font-bold mb-1 text-black">EAN-13: {selectedRecord.ean}</div>
-                          <BarcodeSvg value={selectedRecord.ean} width={150} height={50} />
+                      {/* Stacked Large Barcodes */}
+                      <div className="flex flex-col gap-3.5 mt-2 w-full">
+                        {/* EAN-13 top */}
+                        <div className="w-full flex flex-col">
+                          <div className="text-[9px] font-black uppercase text-black/70 mb-0.5">EAN:</div>
+                          <div className="w-full bg-white flex justify-center">
+                            <BarcodeSvg 
+                              value={selectedRecord.ean} 
+                              width={labelSize === "100x75" ? 360 : 310} 
+                              height={labelSize === "100x75" ? 65 : 55} 
+                            />
+                          </div>
                         </div>
 
-                        <div>
-                          <div className="text-[9px] font-bold mb-1 text-black">LOTE: {selectedRecord.lote}</div>
-                          <BarcodeSvg value={selectedRecord.lote} width={150} height={50} />
+                        {/* LOTE bottom */}
+                        <div className="w-full flex flex-col">
+                          <div className="text-[9px] font-black uppercase text-black/70 mb-0.5">LOTE:</div>
+                          <div className="w-full bg-white flex justify-center">
+                            <BarcodeSvg 
+                              value={selectedRecord.lote} 
+                              width={labelSize === "100x75" ? 360 : 310} 
+                              height={labelSize === "100x75" ? 65 : 55} 
+                            />
+                          </div>
                         </div>
-                      </div>
-
-                      <div className="border-t border-black my-2" />
-
-                      {/* Standard label footer metadata layout */}
-                      <div className="flex items-center justify-between text-[8px] font-bold text-black/70">
-                        <span>ZEBRA GT800 (EPL) - HORIZONTAL</span>
-                        <span>{labelSize} mm</span>
                       </div>
                     </div>
 

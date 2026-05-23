@@ -82,93 +82,58 @@ export function generateEPL(
   epl += "ZT\n";
 
   if (size === "100x75") {
-    // 100mm x 75mm label (Landscape)
+    // 100mm x 75mm label (Landscape, centered stacked large layout)
     // At 203 dpi: 100mm ~ 800 dots wide, 75mm ~ 600 dots high.
     epl += "q800\n";
     epl += "Q600,24\n";
 
-    // Draw top framing line
-    epl += "LO10,20,780,4\n";
+    // Product Code
+    epl += `A30,25,0,2,1,1,N,"COD. MATERIAL:"\n`;
+    epl += `A180,25,0,4,1,1,N,"${cod}"\n`;
 
-    // Header Title
-    epl += `A20,35,0,3,1,1,N,"IDENTIFICACAO DE MATERIAL (HORIZONTAL)"\n`;
-    epl += "LO10,65,780,2\n";
-
-    // Material Code
-    epl += `A20,80,0,2,1,1,N,"COD. MATERIAL:"\n`;
-    epl += `A180,80,0,4,1,1,N,"${cod}"\n`;
-
-    // Description text (wrap up to 3 lines, limit to ~52 chars per line)
-    epl += `A20,125,0,2,1,1,N,"DESCRICAO:"\n`;
+    // Description text (wrapped up to 2 lines to save vertical space for huge barcodes)
     const descLines = wrapText(desc, 52);
     const line1 = descLines[0] || "";
     const line2 = descLines[1] || "";
-    const line3 = descLines[2] || "";
-    epl += `A20,150,0,3,1,1,N,"${line1}"\n`;
+    epl += `A30,65,0,3,1,1,N,"${line1}"\n`;
     if (line2) {
-      epl += `A20,180,0,3,1,1,N,"${line2}"\n`;
-    }
-    if (line3) {
-      epl += `A20,210,0,3,1,1,N,"${line3}"\n`;
+      epl += `A30,95,0,3,1,1,N,"${line2}"\n`;
     }
 
-    epl += "LO10,250,780,1\n";
+    // Stacked Barcode 1 (EAN on top)
+    epl += `A100,150,0,3,1,1,N,"EAN: ${finalEanForBarcode}"\n`;
+    epl += `B100,180,0,${eanBarcodeType},4,8,125,B,"${eplBarcodeData}"\n`;
 
-    // Side-by-Side Barcodes to fully leverage Horizontal scope
-    // Left side: EAN Code
-    epl += `A20,265,0,2,1,1,N,"EAN: ${finalEanForBarcode}"\n`;
-    epl += `B20,290,0,${eanBarcodeType},2,5,80,B,"${eplBarcodeData}"\n`;
-
-    // Right side: LOTE Code
-    epl += `A420,265,0,2,1,1,N,"LOTE: ${lote}"\n`;
-    epl += `B420,290,0,1,2,5,80,B,"${lote}"\n`;
-
-    // Footer lines
-    epl += "LO10,480,780,2\n";
-    epl += `A20,500,0,2,1,1,N,"ZEBRA GT800 (EPL) - HORIZONTAL"\n`;
-    epl += `A420,500,0,2,1,1,N,"DATA: ${dateStr}"\n`;
-    epl += `A680,500,0,2,1,1,N,"100x75"\n`;
+    // Stacked Barcode 2 (LOTE on bottom)
+    epl += `A100,345,0,3,1,1,N,"LOTE: ${lote}"\n`;
+    epl += `B100,375,0,1,3,7,125,B,"${lote}"\n`;
 
   } else {
-    // 80mm x 50mm label (Landscape)
+    // 80mm x 50mm label (Landscape, centered stacked layout)
     // At 203 dpi: 80mm ~ 640 dots wide, 50mm ~ 400 dots high.
     epl += "q640\n";
     epl += "Q400,24\n";
 
-    // Draw top line
-    epl += "LO10,15,620,3\n";
+    // Product Code
+    epl += `A30,15,0,2,1,1,N,"COD. MATERIAL:"\n`;
+    epl += `A180,15,0,3,1,1,N,"${cod}"\n`;
 
-    // Header Title
-    epl += `A20,25,0,2,1,1,N,"IDENTIFICACAO SKU (HORIZONTAL)"\n`;
-    epl += "LO10,50,620,2\n";
-
-    // Material Code
-    epl += `A20,65,0,2,1,1,N,"COD: ${cod}"\n`;
-
-    // Description text (wrapped up to 2 lines, limit to ~42 chars per line)
+    // Description text
     const descLines = wrapText(desc, 42);
     const line1 = descLines[0] || "";
     const line2 = descLines[1] || "";
-    epl += `A20,95,0,2,1,1,N,"DESC: ${line1}"\n`;
+    epl += `A30,45,0,2,1,1,N,"${line1}"\n`;
     if (line2) {
-      epl += `A20,120,0,2,1,1,N,"      ${line2}"\n`;
+      epl += `A30,68,0,2,1,1,N,"${line2}"\n`;
     }
 
-    epl += "LO10,145,620,1\n";
+    // Stacked Barcode 1 (EAN on top)
+    epl += `A60,105,0,2,1,1,N,"EAN: ${finalEanForBarcode}"\n`;
+    epl += `B60,130,0,${eanBarcodeType},3,6,85,B,"${eplBarcodeData}"\n`;
 
-    // Side-by-Side Barcodes for 80x50 label
-    // Left side: EAN Code
-    epl += `A20,160,0,1,1,1,N,"EAN: ${finalEanForBarcode}"\n`;
-    epl += `B20,180,0,${eanBarcodeType},2,4,65,B,"${eplBarcodeData}"\n`;
-
-    // Right side: LOTE Code
-    epl += `A330,160,0,1,1,1,N,"LOTE: ${lote}"\n`;
-    epl += `B330,180,0,1,2,4,65,B,"${lote}"\n`;
-
-    // Footer
-    epl += "LO10,295,620,2\n";
-    epl += `A20,315,0,1,1,1,N,"ZEBRA GT800 (EPL) - 80x50"\n`;
-    epl += `A480,315,0,1,1,1,N,"${dateStr}"\n`;
+    // Stacked Barcode 2 (LOTE on bottom)
+    epl += `A60,250,0,2,1,1,N,"LOTE: ${lote}"\n`;
+    epl += `B60,275,0,1,3,6,85,B,"${lote}"\n`;
   }
 
   // 5. Print command: P[number of labels]
